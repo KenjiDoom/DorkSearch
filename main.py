@@ -1,5 +1,5 @@
-from duckduckgo_search import DDGS
-import re, json, httpx, argparse, random
+import re, json, httpx, argparse, random, requests, urllib.parse
+from bs4 import BeautifulSoup
 
 # User option here, but using command line
 parser = argparse.ArgumentParser(description='Use a custom dork list and search a website')
@@ -27,8 +27,8 @@ def main(url, output=None):
         url = link['href']
         o = urllib.parse.urlparse(url)
         d = urllib.parse.parse_qs(o.query)
-        print(d['uddg'][0])
-    
+        valid_urls.append(d['uddg'][0])
+    print(valid_urls)
     
     if output == None:
         pass
@@ -49,4 +49,4 @@ def check_proxy(proxy):
 
 
 
-main(args.url, args.output, args.proxy)
+main(args.url, args.output)
