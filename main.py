@@ -8,21 +8,28 @@ parser.add_argument('--output', type=str, action='store')
 parser.add_argument('--proxy', type=str, action='store')
 args = parser.parse_args()
 
-def main(url, output=None, proxy=None, headers=None):
-    UA = ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/113.0', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:111.0) Gecko/20100101 Firefox/111.0']
+def main(url, output=None):
+    headers = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:84.0) Gecko/20100101 Firefox/84.0",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    }
     valid_urls = []
-    if proxy == None:
-        print('Performing scan with tor')
-        with DDGS(headers=random.choice(UA), timeout=3) as ddgs:
-            for data in ddgs.text(url):
-                valid_urls.append(data['href'])
-    elif proxy != None:
-        print('Performing scan...')
-        with DDGS(timeout=3) as ddgs:
-            for data in ddgs.text(url):
-                valid_urls.append(data['href'])
+    site = 'https://bloody.com/'
+    dork = '.php'
+
+    page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
+    data = BeautifulSoup(page, 'html.parser').find_all("a", class_="result__url", href=True)
     
-    # Saving to files
+    for link in data:
+        url = link['href']
+        o = urllib.parse.urlparse(url)
+        d = urllib.parse.parse_qs(o.query)
+        print(d['uddg'][0])
+    
+    
     if output == None:
         pass
     elif output != None:
