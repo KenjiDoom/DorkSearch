@@ -8,7 +8,7 @@ parser.add_argument('--output', type=str, action='store')
 parser.add_argument('--proxy', type=str, action='store')
 args = parser.parse_args()
 
-def main(url, dork, proxy=None, output=None):
+def main(site, output=None):
     headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:84.0) Gecko/20100101 Firefox/84.0",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
@@ -17,7 +17,6 @@ def main(url, dork, proxy=None, output=None):
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     }
     valid_urls = []
-    site = 'https://bloody.com/'
     dork = '.php'
 
     page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
