@@ -8,7 +8,7 @@ parser.add_argument('--output', type=str, action='store')
 parser.add_argument('--proxy', type=str, action='store')
 args = parser.parse_args()
 
-def main(url, output=None):
+def main(url, dork, proxy=None, output=None):
     headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:84.0) Gecko/20100101 Firefox/84.0",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
@@ -21,13 +21,17 @@ def main(url, output=None):
     dork = '.php'
 
     page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
-    data = BeautifulSoup(page, 'html.parser').find_all("a", class_="result__url", href=True)
+    soup = BeautifulSoup(page, 'html.parser')
+    data = soup.find_all("a", class_="result__url", href=True)
     
-    for link in data:
-        url = link['href']
-        o = urllib.parse.urlparse(url)
-        d = urllib.parse.parse_qs(o.query)
-        valid_urls.append(d['uddg'][0])
+    if 'If this persists, please' in page:
+        print('Your IP is blocked')
+    else:
+        for link in data:
+            url = link['href']
+            o = urllib.parse.urlparse(url)
+            d = urllib.parse.parse_qs(o.query)
+            valid_urls.append(d['uddg'][0])
     print(valid_urls)
     
     if output == None:
@@ -46,7 +50,5 @@ def check_proxy(proxy):
     except Exception as e:
         print('Dead proxy: ' + proxy)
         print('Killing program....')
-
-
 
 main(args.url, args.output)
