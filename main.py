@@ -1,14 +1,16 @@
 import re, json, httpx, argparse, random, requests, urllib.parse
 from bs4 import BeautifulSoup
+from time import sleep
 
 # User option here, but using command line
 parser = argparse.ArgumentParser(description='Use a custom dork list and search a website')
 parser.add_argument('--url', type=str, action='store', required=True)
+parser.add_argument('--dork', type=str, action='store', required=True)
 parser.add_argument('--output', type=str, action='store')
 parser.add_argument('--proxy', type=str, action='store')
 args = parser.parse_args()
 
-def main(site, output=None):
+def main(site, dork_file, output=None):
     headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:84.0) Gecko/20100101 Firefox/84.0",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
@@ -17,12 +19,14 @@ def main(site, output=None):
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     }
     valid_urls = []
-    dork = '.php'
+    with open(str(dork_file), 'r') as f:
+        dorks = ['inurl:' + line.strip() for line in f]
+        sleep(5)
+        with requests.Session() as r:
+            page = r.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dorks}', timeout=5, headers=headers).text
+            soup = BeautifulSoup(page, 'html.parser')
+            data = soup.find_all("a", class_="result__url", href=True)
 
-    page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
-    soup = BeautifulSoup(page, 'html.parser')
-    data = soup.find_all("a", class_="result__url", href=True)
-    
     if 'If this persists, please' in page:
         print('Your IP is blocked')
     else:
@@ -50,4 +54,4 @@ def check_proxy(proxy):
         print('Dead proxy: ' + proxy)
         print('Killing program....')
 
-main(args.url, args.output)
+main(args.url, args.dork, args.output)
