@@ -1,6 +1,6 @@
 import re, json, httpx, argparse, random, requests, urllib.parse
-from bs4 import BeautifulSoup
 from time import sleep
+from bs4 import BeautifulSoup
 
 # User option here, but using command line
 parser = argparse.ArgumentParser(description='Use a custom dork list and search a website')
@@ -8,7 +8,7 @@ parser.add_argument('--url', type=str, action='store', required=True)
 parser.add_argument('--dork', type=str, action='store', required=True)
 parser.add_argument('--output', type=str, action='store')
 parser.add_argument('--proxy', type=str, action='store')
-args = parser.parse_args()
+#args = parser.parse_args()
 
 def main(site, dork_file, output=None):
     headers = {
@@ -30,7 +30,7 @@ def main(site, dork_file, output=None):
             soup = BeautifulSoup(page, 'html.parser')
             data = soup.find_all("a", class_="result__url", href=True)
             if "If this persists, please" in page:
-                print('Dork not found' + str(dork))
+                print('Dork is not found' + str(dork))
             else:
                 for link in data:
                     url = link['href']
@@ -39,14 +39,6 @@ def main(site, dork_file, output=None):
                     print(d['uddg'][0])
                     valid_urls.append(d['uddg'][0])
     print(valid_urls)
-    
-    if output == None:
-        pass
-    elif output != None:
-        print('Saving results to file...')
-        with open(output + '.txt', 'w') as r:
-            r.write(str(valid_urls))
-            r.close()
     
     if output == None:
         pass
@@ -68,13 +60,16 @@ def check_proxy_type(proxy):
     valid_proxies = []
     try:
         if proxy.endswith('.txt'):
-            print('You entered a proxy file')
+            print('You entered a file')
             with open(str(proxy), 'r') as proxy:
                 proxies = [line.strip() for line in proxy]
                 for proxy in proxies:
-                    valid_proxies.append(check_proxy(proxy))
+                    if check_proxy(proxy) == None:
+                        pass
+                    else:
+                        valid_proxies.append(proxy)
         else:
-            print('You typed one proxy')
+            valid_proxies.append(check_proxy(proxy))
     except FileNotFoundError:
         print('File not found....')
     print(valid_proxies)
