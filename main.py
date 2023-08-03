@@ -21,21 +21,32 @@ def main(site, dork_file, output=None):
     valid_urls = []
     with open(str(dork_file), 'r') as f:
         dorks = ['inurl:' + line.strip() for line in f]
-        sleep(5)
-        with requests.Session() as r:
-            page = r.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dorks}', timeout=5, headers=headers).text
+        for dork in dorks:
+            print('Waiting 1 second...')
+            sleep(1)
+            page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
+            sleep(5)
+            print('Waiting 5 seconds...')
             soup = BeautifulSoup(page, 'html.parser')
             data = soup.find_all("a", class_="result__url", href=True)
-
-    if 'If this persists, please' in page:
-        print('Your IP is blocked')
-    else:
-        for link in data:
-            url = link['href']
-            o = urllib.parse.urlparse(url)
-            d = urllib.parse.parse_qs(o.query)
-            valid_urls.append(d['uddg'][0])
+            if "If this persists, please" in page:
+                print('Dork not found' + str(dork))
+            else:
+                for link in data:
+                    url = link['href']
+                    o = urllib.parse.urlparse(url)
+                    d = urllib.parse.parse_qs(o.query)
+                    print(d['uddg'][0])
+                    valid_urls.append(d['uddg'][0])
     print(valid_urls)
+    
+    if output == None:
+        pass
+    elif output != None:
+        print('Saving results to file...')
+        with open(output + '.txt', 'w') as r:
+            r.write(str(valid_urls))
+            r.close()
     
     if output == None:
         pass
