@@ -60,9 +60,21 @@ def check_proxy(proxy):
     try:
         res = requests.get('https://ifconfig.me/ip', proxies={'https': f"socks5://{proxy}"}, timeout=3)
         print(f'Proxy: {proxy} Public IP: ' + res.text)
-        # Pass Function here
+        return proxy
     except Exception as e:
         print('Dead proxy: ' + proxy)
-        print('Killing program....')
 
-main(args.url, args.dork, args.output)
+def check_proxy_type(proxy):
+    valid_proxies = []
+    try:
+        if proxy.endswith('.txt'):
+            print('You entered a proxy file')
+            with open(str(proxy), 'r') as proxy:
+                proxies = [line.strip() for line in proxy]
+                for proxy in proxies:
+                    valid_proxies.append(check_proxy(proxy))
+        else:
+            print('You typed one proxy')
+    except FileNotFoundError:
+        print('File not found....')
+    print(valid_proxies)
