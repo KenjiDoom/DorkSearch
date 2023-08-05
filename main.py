@@ -1,6 +1,6 @@
 import re, json, httpx, argparse, random, requests, urllib.parse
-from time import sleep
 from bs4 import BeautifulSoup
+from time import sleep
 
 # User option here, but using command line
 parser = argparse.ArgumentParser(description='Use a custom dork list and search a website')
@@ -10,7 +10,7 @@ parser.add_argument('--output', type=str, action='store')
 parser.add_argument('--proxy', type=str, action='store')
 #args = parser.parse_args()
 
-def main(site, dork_file, output=None):
+def main(site, dork_file, proxy_list, output=None):
     headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:84.0) Gecko/20100101 Firefox/84.0",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
@@ -19,26 +19,52 @@ def main(site, dork_file, output=None):
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     }
     valid_urls = []
-    with open(str(dork_file), 'r') as f:
-        dorks = ['inurl:' + line.strip() for line in f]
-        for dork in dorks:
-            print('Waiting 1 second...')
-            sleep(1)
-            page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
-            sleep(5)
-            print('Waiting 5 seconds...')
-            soup = BeautifulSoup(page, 'html.parser')
-            data = soup.find_all("a", class_="result__url", href=True)
-            if "If this persists, please" in page:
-                print('Dork is not found' + str(dork))
-            else:
-                for link in data:
-                    url = link['href']
-                    o = urllib.parse.urlparse(url)
-                    d = urllib.parse.parse_qs(o.query)
-                    print(d['uddg'][0])
-                    valid_urls.append(d['uddg'][0])
-    print(valid_urls)
+    if proxy_list == None:
+        with open(str(dork_file), 'r') as f:
+            dorks = ['inurl:' + line.strip() for line in f]
+            for dork in dorks:
+                print('Waiting 1 second...')
+                sleep(1)
+                page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
+                sleep(5)
+                print('Waiting 5 seconds...')
+                soup = BeautifulSoup(page, 'html.parser')
+                data = soup.find_all("a", class_="result__url", href=True)
+
+                if "If this persists, please" in page:
+                    print('Dork is not found' + str(dork))
+                else:
+                    for link in data:
+                        url = link['href']
+                        o = urllib.parse.urlparse(url)
+                        d = urllib.parse.parse_qs(o.query)
+                        print(d['uddg'][0])
+                        valid_urls.append(d['uddg'][0])
+    elif proxy_list != None:
+        print('Random proxy')
+        proxy = grab_random_proxy(proxy_list)
+        print(proxy)
+        # with open(str(dork_file), 'r') as f:
+        #     dorks = ['inurl:' + line.strip() for line in f]
+        #     for dork in dorks:
+        #         print('Waiting 1 second...')
+        #         sleep(1)
+        #         page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
+        #         sleep(5)
+        #         print('Waiting 5 seconds...')
+        #         soup = BeautifulSoup(page, 'html.parser')
+        #         data = soup.find_all("a", class_="result__url", href=True)
+                
+        #         if "If this persists, please" in page:
+        #             print('Dork is not found' + str(dork))
+        #         else:
+        #             for link in data:
+        #                 url = link['href']
+        #                 o = urllib.parse.urlparse(url)
+        #                 d = urllib.parse.parse_qs(o.query)
+        #                 print(d['uddg'][0])
+        #                 valid_urls.append(d['uddg'][0])
+            #print(valid_urls)
     
     if output == None:
         pass
@@ -47,6 +73,11 @@ def main(site, dork_file, output=None):
         with open(output + '.txt', 'w') as r:
             r.write(str(valid_urls))
             r.close()
+
+def grab_random_proxy(proxy_list):
+    random_index_number_proxy_list = random.randint(0, len(proxy_list) - 1)
+    random_proxy = proxy_list[random_index_number_proxy_list]
+    return random_proxy
 
 def check_proxy(proxy):
     try:
@@ -73,3 +104,7 @@ def check_proxy_type(proxy):
     except FileNotFoundError:
         print('File not found....')
     print(valid_proxies)
+    main('https://bloody.com/', 'dork.txt', valid_proxies)
+
+check_proxy_type('proxy_list.txt')
+
