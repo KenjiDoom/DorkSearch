@@ -40,31 +40,32 @@ def main(site, dork_file, proxy_list, output=None):
                         d = urllib.parse.parse_qs(o.query)
                         print(d['uddg'][0])
                         valid_urls.append(d['uddg'][0])
+    
     elif proxy_list != None:
-        print('Random proxy')
-        proxy = grab_random_proxy(proxy_list)
-        print(proxy)
-        # with open(str(dork_file), 'r') as f:
-        #     dorks = ['inurl:' + line.strip() for line in f]
-        #     for dork in dorks:
-        #         print('Waiting 1 second...')
-        #         sleep(1)
-        #         page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
-        #         sleep(5)
-        #         print('Waiting 5 seconds...')
-        #         soup = BeautifulSoup(page, 'html.parser')
-        #         data = soup.find_all("a", class_="result__url", href=True)
-                
-        #         if "If this persists, please" in page:
-        #             print('Dork is not found' + str(dork))
-        #         else:
-        #             for link in data:
-        #                 url = link['href']
-        #                 o = urllib.parse.urlparse(url)
-        #                 d = urllib.parse.parse_qs(o.query)
-        #                 print(d['uddg'][0])
-        #                 valid_urls.append(d['uddg'][0])
-            #print(valid_urls)
+        with open(str(dork_file), 'r') as f:
+           dorks = ['inurl:' + line.strip() for line in f]
+           for dork in dorks:
+               print('Waiting 1 second...')
+               sleep(1)
+               # Proxy problem here
+               proxy = grab_random_proxy(proxy_list)
+               print(f'Using the following proxy: {proxy}')
+               page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', proxies={'https': f"socks5://{proxy}"}, headers=headers).text
+               sleep(5)
+               print('Waiting 5 seconds...')
+               soup = BeautifulSoup(page, 'html.parser')
+               data = soup.find_all("a", class_="result__url", href=True)
+               
+               if "If this persists, please" in page:
+                   print('Dork is not found' + str(dork))
+               else:
+                   for link in data:
+                       url = link['href']
+                       o = urllib.parse.urlparse(url)
+                       d = urllib.parse.parse_qs(o.query)
+                       print(d['uddg'][0])
+                       valid_urls.append(d['uddg'][0])
+        print(valid_urls)
     
     if output == None:
         pass
