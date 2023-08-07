@@ -19,53 +19,38 @@ def main(site, dork_file, proxy_list, output=None):
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     }
     valid_urls = []
-    if proxy_list == None:
-        with open(str(dork_file), 'r') as f:
-            dorks = ['inurl:' + line.strip() for line in f]
-            for dork in dorks:
-                print('Waiting 1 second...')
-                sleep(1)
-                page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
-                sleep(5)
-                print('Waiting 5 seconds...')
-                soup = BeautifulSoup(page, 'html.parser')
-                data = soup.find_all("a", class_="result__url", href=True)
-
-                if "If this persists, please" in page:
-                    print('Dork is not found' + str(dork))
-                else:
-                    for link in data:
-                        url = link['href']
-                        o = urllib.parse.urlparse(url)
-                        d = urllib.parse.parse_qs(o.query)
-                        print(d['uddg'][0])
-                        valid_urls.append(d['uddg'][0])
-    
-    elif proxy_list != None:
-        with open(str(dork_file), 'r') as f:
-           dorks = ['inurl:' + line.strip() for line in f]
-           for dork in dorks:
-               print('Waiting 1 second...')
-               sleep(1)
-               # Proxy problem here
-               proxy = grab_random_proxy(proxy_list)
-               print(f'Using the following proxy: {proxy}')
-               page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', proxies={'https': f"socks5://{proxy}"}, headers=headers).text
-               sleep(5)
-               print('Waiting 5 seconds...')
-               soup = BeautifulSoup(page, 'html.parser')
-               data = soup.find_all("a", class_="result__url", href=True)
-               
-               if "If this persists, please" in page:
-                   print('Dork is not found' + str(dork))
-               else:
-                   for link in data:
-                       url = link['href']
-                       o = urllib.parse.urlparse(url)
-                       d = urllib.parse.parse_qs(o.query)
-                       print(d['uddg'][0])
-                       valid_urls.append(d['uddg'][0])
-        print(valid_urls)
+    with open(str(dork_file), 'r') as f:
+       dorks = ['inurl:' + line.strip() for line in f]
+       for dork in dorks:
+        print('Waiting 1 second...')
+        sleep(1)
+        proxy = grab_random_proxy(proxy_list)
+        print(type(proxy))
+        if proxy != None:
+            print(f'Using the following proxy: {proxy}')
+            page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', proxies={'https': f"socks5://{proxy}"}, headers=headers).text
+            sleep(5)
+            print('Waiting 5 seconds...')
+            soup = BeautifulSoup(page, 'html.parser')
+            data = soup.find_all("a", class_="result__url", href=True)
+        elif proxy == None:
+            print('Not using a proxy')
+            page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
+            sleep(5)
+            print('Waiting 5 seconds...')
+            soup = BeautifulSoup(page, 'html.parser')
+            data = soup.find_all("a", class_="result__url", href=True)
+                   
+        if "If this persists, please" in page:
+            print('Dork is not found' + str(dork))
+        else:
+            for link in data:
+                url = link['href']
+                o = urllib.parse.urlparse(url)
+                d = urllib.parse.parse_qs(o.query)
+                print(d['uddg'][0])
+                valid_urls.append(d['uddg'][0])
+    print(valid_urls)
     
     if output == None:
         pass
@@ -76,9 +61,13 @@ def main(site, dork_file, proxy_list, output=None):
             r.close()
 
 def grab_random_proxy(proxy_list):
-    random_index_number_proxy_list = random.randint(0, len(proxy_list) - 1)
-    random_proxy = proxy_list[random_index_number_proxy_list]
-    return random_proxy
+    try:
+        random_index_number_proxy_list = random.randint(0, len(proxy_list) - 1)
+        random_proxy = proxy_list[random_index_number_proxy_list]
+        return random_proxy
+    except ValueError:
+        # No because we are still returning a list...., we want to return a string
+        return ""
 
 def check_proxy(proxy):
     try:
@@ -104,8 +93,11 @@ def check_proxy_type(proxy):
             valid_proxies.append(check_proxy(proxy))
     except FileNotFoundError:
         print('File not found....')
-    print(valid_proxies)
     main('https://bloody.com/', 'dork.txt', valid_proxies)
 
-check_proxy_type('proxy_list.txt')
+
+check_proxy_type('test.txt')
+#main('https://bloody.com/', 'dork.txt', valid_proxies)
+
+
 
