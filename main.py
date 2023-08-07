@@ -37,8 +37,6 @@ def main(site, dork_file, proxy_file, output=None):
             sleep(5)
             soup = BeautifulSoup(page, 'html.parser')
             data = soup.find_all("a", class_="result__url", href=True)
-        elif proxy == 'Tor':
-            print('Running tor...')
 
         if "If this persists, please" in page:
             print('Dork is not found' + str(dork))
