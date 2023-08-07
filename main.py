@@ -2,12 +2,11 @@ import re, json, httpx, argparse, random, requests, urllib.parse
 from bs4 import BeautifulSoup
 from time import sleep
 
-# User option here, but using command line
-parser = argparse.ArgumentParser(description='Use a custom dork list and search a website')
-parser.add_argument('--url', type=str, action='store', required=True)
-parser.add_argument('--dork', type=str, action='store', required=True)
-parser.add_argument('--output', type=str, action='store')
-parser.add_argument('--proxy', type=str, action='store')
+parser = argparse.ArgumentParser(description='DorkSearch is used for searching hidden endpoints within a domain using a custom list of dorks.')
+parser.add_argument('--url', type=str, action='store', help='The url you want to scan', required=True)
+parser.add_argument('--dork', type=str, action='store', help='Dork list you want to use, must be .txt file.', required=True)
+parser.add_argument('--output', type=str, action='store', help='Output file you want results to be saved to.')
+parser.add_argument('--proxy', type=str, action='store', help='Proxy list using a file .txt or individual proxy ex: 10.10.10.10:1080')
 args = parser.parse_args()
 
 def main(site, dork_file, proxy_file, output=None):
@@ -19,9 +18,6 @@ def main(site, dork_file, proxy_file, output=None):
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     }
     valid_urls = []
-    # 1. Check the proxy file
-    # 2. Check the proxies from the file and make sure they are valid.
-    # 3. Get a random proxy
     proxy_list = check_proxy_type(proxy_file)    
     with open(str(dork_file), 'r') as f:
        dorks = ['inurl:' + line.strip() for line in f]
@@ -82,7 +78,9 @@ def check_proxy(proxy):
 def check_proxy_type(proxy):
     valid_proxies = []
     try:
-        if proxy.endswith('.txt'):
+        if proxy == None:
+            pass
+        elif proxy.endswith('.txt'):
             print('You entered a file')
             with open(str(proxy), 'r') as proxy:
                 proxies = [line.strip() for line in proxy]
