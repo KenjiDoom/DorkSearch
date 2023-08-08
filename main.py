@@ -1,5 +1,7 @@
 import re, json, httpx, argparse, random, requests, urllib.parse
 from bs4 import BeautifulSoup
+from rich.console import Console
+from rich.table import Table
 from time import sleep
 
 parser = argparse.ArgumentParser(description='DorkSearch is used for searching hidden endpoints within a domain using a custom list of dorks.')
@@ -8,6 +10,7 @@ parser.add_argument('--dork', type=str, action='store', help='Dork list you want
 parser.add_argument('--output', type=str, action='store', help='Output file you want results to be saved to.')
 parser.add_argument('--proxy', type=str, action='store', help='Proxy list using a file .txt or individual proxy ex: 10.10.10.10:1080')
 args = parser.parse_args()
+console = Console()
 
 def main(site, dork_file, proxy_file, output=None):
     headers = {
@@ -39,15 +42,23 @@ def main(site, dork_file, proxy_file, output=None):
             data = soup.find_all("a", class_="result__url", href=True)
 
         if "If this persists, please" in page:
-            print('Dork is not found' + str(dork))
+            console.print('Dork is not found', str(dork), stlye='bold red')
         else:
             for link in data:
                 url = link['href']
                 o = urllib.parse.urlparse(url)
                 d = urllib.parse.parse_qs(o.query)
-                print(d['uddg'][0])
+                # print(d['uddg'][0])
                 valid_urls.append(d['uddg'][0])
-    print(valid_urls)
+    
+    table = Table(title='Results', show_edge=False, header_style="bold cyan")
+    table.add_column("URL", style="dim")
+    table.add_column("DORK", justify="right")
+
+    table.add_row(
+        str(valid_urls), str(dork)
+    )
+    console.print(table)
     
     if output == None:
         pass
