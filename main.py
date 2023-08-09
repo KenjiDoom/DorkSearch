@@ -25,17 +25,16 @@ def main(site, dork_file, proxy_file, output=None):
     with open(str(dork_file), 'r') as f:
        dorks = ['inurl:' + line.strip() for line in f]
        for dork in dorks:
-        print("Starting....")
         sleep(1)
         proxy = grab_random_proxy(proxy_list)
         if proxy != None:
-            print(f'Fetching data with the following proxy: {proxy}')
+            console.print('[bold green] Running...')
             page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', proxies={'https': f"socks5://{proxy}"}, headers=headers).text
             sleep(5)
             soup = BeautifulSoup(page, 'html.parser')
             data = soup.find_all("a", class_="result__url", href=True)
         elif proxy == None:
-            print('Fetching data without proxy...')
+            console.print('[bold green] Running...')
             page = requests.get(f'https://duckduckgo.com/html/?q=site:{site} inurl:{dork}', headers=headers).text
             sleep(5)
             soup = BeautifulSoup(page, 'html.parser')
@@ -48,15 +47,14 @@ def main(site, dork_file, proxy_file, output=None):
                 url = link['href']
                 o = urllib.parse.urlparse(url)
                 d = urllib.parse.parse_qs(o.query)
-                # print(d['uddg'][0])
                 valid_urls.append(d['uddg'][0])
     
-    table = Table(title='Results', show_edge=False, header_style="bold cyan")
+    table = Table(title='Results', show_edge=False, header_style="bold green")
     table.add_column("URL", style="dim")
     table.add_column("DORK", justify="right")
 
     table.add_row(
-        str(valid_urls), str(dork)
+        str(valid_urls), str(dork), style="bold yellow"
     )
     console.print(table)
     
@@ -79,10 +77,9 @@ def grab_random_proxy(proxy_list):
 def check_proxy(proxy):
     try:
         res = requests.get('https://ifconfig.me/ip', proxies={'https': f"socks5://{proxy}"}, timeout=3)
-        print(f'Proxy: {proxy} Public IP: ' + res.text)
         return proxy
     except Exception as e:
-        print('Dead proxy: ' + proxy)
+        console.print('[bold red] Dead proxy found: ' + proxy)
 
 def check_proxy_type(proxy):
     valid_proxies = []
@@ -90,7 +87,7 @@ def check_proxy_type(proxy):
         if proxy == None:
             pass
         elif proxy.endswith('.txt'):
-            print('You entered a file')
+            console.print('[bold blue] Loading proxies...')
             with open(str(proxy), 'r') as proxy:
                 proxies = [line.strip() for line in proxy]
                 for proxy in proxies:
@@ -101,9 +98,8 @@ def check_proxy_type(proxy):
         else:
             valid_proxies.append(check_proxy(proxy))
     except FileNotFoundError:
-        print('File not found....')
+        console.print('[bold red]File not found...')
     return valid_proxies
-
 
 if __name__ == '__main__':
     main(args.url, args.dork, args.proxy, args.output)
