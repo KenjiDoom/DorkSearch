@@ -41,7 +41,7 @@ def main(site, dork_file, proxy_file, output=None):
             data = soup.find_all("a", class_="result__url", href=True)
 
         if "If this persists, please" in page:
-            console.print('Dork is not found', str(dork), stlye='bold red')
+            console.print('Dork is not found', str(dork), style='bold red')
         else:
             for link in data:
                 url = link['href']
